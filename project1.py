@@ -1,4 +1,4 @@
-
+//PROYECTO MATEO VELAZCO Y ANGIELA VARGAS
 
 import sympy as sp
 
