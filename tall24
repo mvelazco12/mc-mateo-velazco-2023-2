@@ -1,0 +1,61 @@
+class Node:
+    def __init__(self, is_leaf=True):
+        self.is_leaf = is_leaf
+        self.keys = []
+        self.children = []
+
+class BPlusTree:
+    def __init__(self, m):
+        self.root = Node()
+        self.m = m
+
+    def insert(self, key):
+        if key in self.root.keys:
+            return  # Avoid duplicate keys for simplicity
+
+        if len(self.root.keys) == self.m:
+            new_root = Node(is_leaf=False)
+            new_root.children.append(self.root)
+            self.split(new_root, 0)
+            self.root = new_root
+
+        self.insert_non_full(self.root, key)
+
+    def insert_non_full(self, node, key):
+        i = len(node.keys) - 1
+
+        if node.is_leaf:
+            node.keys.append(None)
+            while i >= 0 and key < node.keys[i]:
+                node.keys[i + 1] = node.keys[i]
+                i -= 1
+            node.keys[i + 1] = key
+        else:
+            while i >= 0 and key < node.keys[i]:
+                i -= 1
+            i += 1
+            if len(node.children[i].keys) == self.m:
+                self.split(node, i)
+                if key > node.keys[i]:
+                    i += 1
+            self.insert_non_full(node.children[i], key)
+
+    def split(self, parent, index):
+        new_node = Node(is_leaf=parent.children[index].is_leaf)
+        split_index = self.m // 2
+
+        parent.keys.insert(index, parent.children[index].keys[split_index])
+        parent.children.insert(index + 1, new_node)
+
+        new_node.keys = parent.children[index].keys[split_index + 1:]
+        parent.children[index].keys = parent.children[index].keys[:split_index]
+
+        if not parent.children[index].is_leaf:
+            new_node.children = parent.children[index].children[split_index + 1:]
+            parent.children[index].children = parent.children[index].children[:split_index + 1]
+
+# Ejemplo de uso
+b_plus_tree = BPlusTree(m=5)
+elements = [21, 14, 2, 11, 7, 20, 13, 30, 18, 5, 6, 29, 12, 27, 4, 28, 10, 15, 22, 1, 19, 3]
+for element in elements:
+    b_plus_tree.insert(element)
